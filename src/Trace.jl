@@ -3,7 +3,7 @@ module Trace
 using Memento
 
 global const TRACE_LEVEL = 5
-global const DEFAULT_FMT_STRING = "[{level} | {lookup}]: {msg}"
+global const DEFAULT_FMT_STRING = "[{level}]: {msg}"
 
 export @trace
 
@@ -34,7 +34,7 @@ macro config(args...)
                 $io,
                 DefaultFormatter($fmt),
             ),
-            "base"
+            "default"
         )
 
         Memento._loggers["Trace"]
@@ -54,13 +54,10 @@ macro trace(msg)
 
         if levelnum <= TRACE_LEVEL
             return quote
-                dict = Dict{Symbol, Any}(
-                    :name => "Trace",
-                    :level => "trace",
-                    :levelnum => TRACE_LEVEL,
-                    :msg => $msg
+                rec = Memento._loggers["Trace"].record(
+                    "Trace", "trace", TRACE_LEVEL, $msg
                 )
-                log($logger, dict)
+                @sync log($logger, rec)
             end
         end
     end
