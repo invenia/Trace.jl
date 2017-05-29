@@ -3,10 +3,10 @@ using Base.Test
 using Memento
 
 # General usage
-@trace "My skipped message"
-logger = @Trace.config(Trace.DEFAULT_FMT_STRING, IOBuffer())
-@trace "My logged message"
-log_str = takebuf_string(logger.handlers["default"].io)
+@log "My skipped message"
+logger = @Trace.config(io=IOBuffer())
+@log "My logged message"
+log_str = takebuf_string(logger.handlers["log-stdout"].io)
 @test contains(log_str, "trace")
 @test contains(log_str, "My logged message")
 
@@ -14,14 +14,14 @@ log_str = takebuf_string(logger.handlers["default"].io)
 Memento.reset!()
 skip_trace = median(map(1:1000) do i
     tic()
-    @trace "My skipped message"
+    @log "My skipped message"
     return toq()
 end)
 
-@Trace.config(Trace.DEFAULT_FMT_STRING, IOBuffer())
+@Trace.config(io=IOBuffer())
 log_trace = median(map(1:1000) do i
     tic()
-    @trace "My logged message"
+    @log "My logged message"
     return toq()
 end)
 
@@ -58,3 +58,5 @@ println("Logged log time: $log_log")
 
 @test skip_trace < skip_log
 @test skip_trace < log_trace
+
+@trace median(rand(1000))
