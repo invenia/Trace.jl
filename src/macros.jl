@@ -39,10 +39,10 @@ Monitors execution time and memory allocation for the expression and automatical
 logs those metrics to the `logger`.
 """
 macro trace(logger, ex)
-    ENABLED::Bool && return esc(:nothing)
+    ENABLED::Bool || return esc(:nothing)
 
     if ex.head === :call
-        return Expr(:call, Trace.trace, logger, (esc(a) for a in ex.args)...)
+        return Expr(:call, Trace.trace, esc(logger), (esc(a) for a in ex.args)...)
     else
         throw(ArgumentError("Expr $ex is not callable"))
     end

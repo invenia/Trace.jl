@@ -18,23 +18,29 @@ type TraceRecord <: Record
     gctime::Attribute
     nalloc::Attribute
 
-    function TraceRecord(msg::AbstractString, metrics::Dict=Dict{Symbol, Real}())
+    function TraceRecord(
+        name::AbstractString,
+        level::AbstractString,
+        levelnum::Int,
+        msg::AbstractString,
+        metrics::Dict=Dict{Symbol, Real}()
+    )
         time = now()
         trace = Attribute(StackTrace, Memento.get_trace)
 
         new(
             Attribute(DateTime, () -> round(time, Base.Dates.Second)),
-            Attribute("trace"),
-            Attribute(-1),
+            Attribute(level),
+            Attribute(levelnum),
             Attribute(AbstractString, Memento.get_msg(msg)),
-            Attribute("Trace"),
+            Attribute(name),
             Attribute(myid()),
             Attribute(StackFrame, Memento.get_lookup(trace)),
             trace,
-            Attribute(AbstractString, () -> "$(get(metrics, :time, NaN)) seconds"),
-            Attribute(AbstractString, () -> datasize(get(metrics, :alloc, NaN), style=:bin, format="%.3f")),
-            Attribute(AbstractString, () -> "$(get(metrics, :gctime, NaN)) % gc time"),
-            Attribute(AbstractString, () -> _humanize_alloc(get(metrics, :nalloc, NaN))),
+            Attribute(AbstractString, () -> get(metrics, :time, "NaN seconds")),
+            Attribute(AbstractString, () -> get(metrics, :alloc, "NaN bytes")),
+            Attribute(AbstractString, () -> get(metrics, :gctime, "NaN % gc time")),
+            Attribute(AbstractString, () -> get(metrics, :nalloc, "NaN")),
         )
     end
 end
@@ -53,18 +59,21 @@ function trace(f::Function, logger::Logger, args...; kwargs...)
 
     elapsedtime = Base.time_ns() - elapsedtime
     diff = Base.GC_Diff(Base.gc_num(), stats)
-    msg = "Function: $(string(f)) Time: {time} ({gctime}), Allocated: {alloc} ({nalloc})"
-    rec = TraceRecord(
-        string(f),
-        "trace",
-        logger.levels["trace"],
-        Dict(
-            :time => elapsedtime / 1e9,
-            :alloc => diff.allocd,
-            :gctime => 100 * diff.total_time / elapsedtime,
-            :nalloc => Base.gc_alloc_count(diff)
-        )
+
+    args = Dict(
+        :time => "$(round(elapsedtime / 1e9, 6)) seconds",
+        :alloc => datasize(diff.allocd, style=:bin, format="%.3f"),
+        :gctime => "$(round(100 * diff.total_time / elapsedtime, 4)) % gc time",
+        :nalloc => _humanize_alloc(Base.gc_alloc_count(diff))
     )
+
+    msg = string(
+        "`$(string(f))` <",
+        "Time: $(args[:time]) ($(args[:gctime])), ",
+        "Allocated: $(args[:alloc]) ($(args[:nalloc]))>"
+    )
+
+    rec = TraceRecord(logger.name, "trace", logger.levels["trace"], msg, args)
     @sync log(logger, rec)
 
     return val
