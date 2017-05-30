@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Home · Trace.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/highlightjs/default.css" rel="stylesheet" type="text/css"/><link href="assets/documenter.css" rel="stylesheet" type="text/css"/><link href="assets/invenia.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>Trace.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" action="search.html"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li class="current"><a class="toctext" href="index.html">Home</a><ul class="internal"><li><a class="toctext" href="#Macros-1">Macros</a></li><li><a class="toctext" href="#Tracing-functions-1">Tracing functions</a></li></ul></li><li><a class="toctext" href="api.html">API</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href="index.html">Home</a></li></ul><a class="edit-page" href="https://github.com/invenia/Trace.jl/blob/9b1b2b10f51782a75e8ca4a521ae1bd6040694c2/docs/src/index.md#L{line}"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Home</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Trace-1" href="#Trace-1">Trace</a></h1><p><a href="https://invenia.github.io/Trace.jl/stable"><img src="https://img.shields.io/badge/docs-stable-blue.svg" alt="stable"/></a> <a href="https://invenia.github.io/Trace.jl/latest"><img src="https://img.shields.io/badge/docs-latest-blue.svg" alt="latest"/></a> <a href="https://travis-ci.org/invenia/Trace.jl"><img src="https://travis-ci.org/invenia/Trace.jl.svg?branch=master" alt="Build Status"/></a> <a href="https://ci.appveyor.com/project/invenia/Trace-jl"><img src="https://ci.appveyor.com/api/projects/status/github/invenia/Trace.jl?svg=true" alt="Build status"/></a> <a href="https://codecov.io/gh/invenia/Trace.jl"><img src="https://codecov.io/gh/invenia/Trace.jl/branch/master/graph/badge.svg" alt="codecov"/></a></p><p>Trace provides a minimal interface for zero overhead program tracing in julia.</p><h2><a class="nav-anchor" id="Macros-1" href="#Macros-1">Macros</a></h2><p><a href="https://docs.julialang.org/en/release-0.5/manual/metaprogramming/#macros">Macro</a> versions of the logging methods (e.g., <code>log</code>, <code>debug</code>, <code>info</code>) provided in <a href="https://github.com/invenia/Memento.jl">Memento</a> are used to only include logging expressions in the compiled source when tracing has been enabled (<code>Trace.enable()</code>).</p><p>Example)</p><pre><code class="language-julia">using Memento
+using Trace
+
+# Configure Memento logging as usual.
+logger = Memento.config(&quot;debug&quot;; fmt=&quot;[{level} | {name}]: {msg}&quot;)
+
+# NOTE: We&#39;re enabling tracing prior to loading any of the macro
+# expressions that depend on it.
+Trace.enable()  # Sets `Trace.ENABLED` and adds a &quot;trace&quot; logging level.
+
+# Might want to include another package that includes tracing expressions.
+# using MyTracedPkg
+
+# Log a debug message when tracing is enabled.
+@debug(logger, &quot;Something to help you track down a bug.&quot;)</code></pre><p><strong>NOTE</strong>: The <code>@debug</code> expression would be excluded at runtime if <code>Trace.enable()</code> was commented out.</p><h2><a class="nav-anchor" id="Tracing-functions-1" href="#Tracing-functions-1">Tracing functions</a></h2><p>As program tracing lies somewhere between logging and profiling it is not uncommon to want to automatically log execution time and memory allocation of a function. Trace provides an <code>@trace(logger, ex)</code> macro for doing exactly this.</p><p>Example)</p><pre><code class="language-julia"># Assuming similar code to above
+...
+
+# Set the logging level to &quot;trace&quot; (5) which defaults to having a
+# lower priority logging than &quot;debug&quot; (10).
+set_level(logger, &quot;trace&quot;)
+
+
+# Same behaviour as `@debug` with regard to `Trace.enable()`.
+@trace(logger, rand(1000, 1000))</code></pre><footer><hr/><a class="next" href="api.html"><span class="direction">Next</span><span class="title">API</span></a></footer></article></body></html>
