@@ -37,10 +37,10 @@ type TraceRecord <: Record
             Attribute(myid()),
             Attribute(StackFrame, Memento.get_lookup(trace)),
             trace,
-            Attribute(AbstractString, () -> get(metrics, :time, "NaN seconds")),
-            Attribute(AbstractString, () -> get(metrics, :alloc, "NaN bytes")),
-            Attribute(AbstractString, () -> get(metrics, :gctime, "NaN % gc time")),
-            Attribute(AbstractString, () -> get(metrics, :nalloc, "NaN")),
+            Attribute(get(metrics, :time, "NaN seconds")),
+            Attribute(get(metrics, :alloc, "NaN bytes")),
+            Attribute(get(metrics, :gctime, "NaN % gc time")),
+            Attribute(get(metrics, :nalloc, "NaN")),
         )
     end
 end
@@ -83,10 +83,6 @@ trace(logger::Logger, f::Function, args...; kwargs...) = trace(f, logger, args..
 
 # Simple utility method for humanizing the number of allocations.
 function _humanize_alloc(n)
-    if !isnan(n)
-        alloc, ma = Base.prettyprint_getunits(n, length(Base._cnt_units), Int64(1000))
-        return "$(alloc)$(Base._cnt_units[ma])"
-    else
-        return "$n"
-    end
+    alloc, ma = Base.prettyprint_getunits(n, length(Base._cnt_units), Int64(1000))
+    return "$(alloc)$(Base._cnt_units[ma])"
 end
