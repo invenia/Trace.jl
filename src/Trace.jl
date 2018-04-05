@@ -3,7 +3,7 @@ module Trace
 using Memento
 using Humanize
 
-import Memento: Attribute
+import Memento: Attribute, addlevel!, getlogger
 
 global ENABLED = false
 
@@ -28,7 +28,7 @@ Enables logging for all subsequent tracing macros and adds a "trace" (5) logging
 function enable()
     ENABLED::Bool &&  return  # exit early if enabled has already been set
     global ENABLED = true
-    add_level(get_logger(), "trace", 5)
+    addlevel!(getlogger(), "trace", 5)
 end
 
 include(joinpath(Pkg.dir("Trace"), "src", "record.jl"))
