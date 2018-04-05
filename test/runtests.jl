@@ -31,7 +31,7 @@ skip_trace = median(map(1:1000) do i
     tic()
     @info(logger, "My skipped message")
     res = toq()
-    @test isempty(takebuf_string(io))
+    @test isempty(String(take!(io)))
     return res
 end)
 
@@ -42,7 +42,7 @@ log_trace = median(map(1:1000) do i
     tic()
     @info(logger, "My logged message")
     res = toq()
-    @test contains(takebuf_string(io), "My logged message")
+    @test contains(String(take!(io)), "My logged message")
     return res
 end)
 
