@@ -67,5 +67,5 @@ println("Logged log time: $log_log")
 @test skip_trace < skip_log
 @test skip_trace < log_trace
 
-set_level(logger, "trace")
+Memento.setlevel!(logger, "trace")
 @trace(logger, median(rand(1000)))
