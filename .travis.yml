@@ -4,17 +4,23 @@ os:
   - linux
   - osx
 julia:
-  - release
+  - 0.6
+  - 0.7
+  - 1.0
   - nightly
+matrix:
+  allow_failures:
+    - julia: nightly
+  fast_finish: true
 notifications:
   email: false
-# uncomment the following lines to override the default test script
-script:
- - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
- - julia -e 'Pkg.add("Memento"); Pkg.checkout("Memento"); Pkg.clone(pwd()); Pkg.build("Trace"); Pkg.test("Trace"; coverage=true)'
+# script:
+#   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+#   - julia -e 'Pkg.add("Memento"); Pkg.checkout("Memento"); Pkg.clone(pwd()); Pkg.build("Trace"); Pkg.test("Trace"; coverage=true)'
 after_success:
-  # push coverage results to CodeCov
-  - julia -e 'cd(Pkg.dir("Trace")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
-  # build documentation
-  - julia -e 'Pkg.add("Documenter")'
-  - julia -e 'cd(Pkg.dir("Trace")); include(joinpath("docs", "make.jl"))'
+  - |
+    julia -e '
+      VERSION >= v"0.7.0-DEV.3656" && using Pkg
+      VERSION >= v"0.7.0-DEV.5183" || cd(Pkg.dir("Trace"))
+      Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())
+      Pkg.add("Documenter"); include(joinpath("docs", "make.jl"))'

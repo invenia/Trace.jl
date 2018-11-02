@@ -1,6 +1,9 @@
+using Compat.Test
 using Trace
-using Base.Test
 using Memento
+
+using Compat: occursin
+using Compat.Statistics: median
 
 const FMT_STR = "[{level}]:{name} - {msg}"
 const LEVELS = Dict(
@@ -28,10 +31,10 @@ logger = Logger(
 )
 
 skip_trace = median(map(1:1000) do i
-    tic()
-    @info(logger, "My skipped message")
-    res = toq()
-    @test isempty(takebuf_string(io))
+    res = @elapsed begin
+        @info(logger, "My skipped message")
+    end
+    @test isempty(read(io, String))
     return res
 end)
 
@@ -39,24 +42,26 @@ end)
 Trace.enable()
 
 log_trace = median(map(1:1000) do i
-    tic()
-    @info(logger, "My logged message")
-    res = toq()
-    @test contains(takebuf_string(io), "My logged message")
+    res = @elapsed begin
+        @info(logger, "My logged message")
+    end
+    @test occursin(read(io, String), "My logged message")
     return res
 end)
 
 # Compare against logging alone
 skip_log = median(map(1:1000) do i
-    tic()
-    debug(logger, "My skipped message")
-    return toq()
+    res = @elapsed begin
+        debug(logger, "My skipped message")
+    end
+    return res
 end)
 
 log_log = median(map(1:1000) do i
-    tic()
-    info(logger, "My skipped message")
-    return toq()
+    res = @elapsed begin
+        info(logger, "My skipped message")
+    end
+    return res
 end)
 
 println("Skipped trace time: $skip_trace")
@@ -67,5 +72,5 @@ println("Logged log time: $log_log")
 @test skip_trace < skip_log
 @test skip_trace < log_trace
 
-set_level(logger, "trace")
+setlevel!(logger, "trace")
 @trace(logger, median(rand(1000)))

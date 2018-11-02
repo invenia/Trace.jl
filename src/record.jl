@@ -4,7 +4,7 @@
 Stores extra metrics (e.g., execution time, memory allocated) about a function
 call for trace records.
 """
-type TraceRecord <: Record
+mutable struct TraceRecord <: Record
     date::Attribute
     level::Attribute
     levelnum::Attribute
@@ -26,16 +26,16 @@ type TraceRecord <: Record
         metrics::Dict=Dict{Symbol, Real}()
     )
         time = now()
-        trace = Attribute(StackTrace, Memento.get_trace)
+        trace = Attribute{StackTrace}(Memento.get_trace)
 
         new(
-            Attribute(DateTime, () -> round(time, Base.Dates.Second)),
+            Attribute(() -> round(time; digits=Base.Dates.Second)),
             Attribute(level),
             Attribute(levelnum),
-            Attribute(AbstractString, Memento.get_msg(msg)),
+            Attribute{AbstractString}(msg),
             Attribute(name),
             Attribute(myid()),
-            Attribute(StackFrame, Memento.get_lookup(trace)),
+            Attribute(Memento.get_lookup(trace)),
             trace,
             Attribute(get(metrics, :time, "NaN seconds")),
             Attribute(get(metrics, :alloc, "NaN bytes")),

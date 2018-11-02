@@ -17,7 +17,7 @@ using Memento
 using Trace
 
 # Configure Memento logging as usual.
-logger = Memento.config("debug"; fmt="[{level} | {name}]: {msg}")
+logger = Memento.config!("debug"; fmt="[{level} | {name}]: {msg}")
 
 # NOTE: We're enabling tracing prior to loading any of the macro
 # expressions that depend on it.
@@ -44,7 +44,7 @@ Example)
 
 # Set the logging level to "trace" (5) which defaults to having a
 # lower priority logging than "debug" (10).
-set_level(logger, "trace")
+setlevel!(logger, "trace")
 
 
 # Same behaviour as `@debug` with regard to `Trace.enable()`.
